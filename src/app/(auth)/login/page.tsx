@@ -1,14 +1,42 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 import Footer from "@/components/Footer";
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   async function handleLogin(formData: FormData) {
     "use server";
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-    const email = formData.get("email");
-    const password = formData.get("password");
+    if (!email || !password) {
+      redirect("/login?error=missing");
+    }
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (!user || !user.password) {
+      redirect("/login?error=invalid");
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      redirect("/login?error=invalid");
+    }
+    const cookieStore = await cookies();
+    cookieStore.set("userId", user.id, {
+      httpOnly: true,
+      path: "/",
+    });
+
     redirect("/dashboard");
   }
 
@@ -34,6 +62,18 @@ export default function LoginPage() {
               <div className="flex flex-col gap-1 w-full">
                 <span className="text-6xl font-bold">Happening now.</span>
               </div>
+
+              {error === "invalid" && (
+                <p className="text-red-500 text-sm">
+                  Invalid email or password.
+                </p>
+              )}
+              {error === "missing" && (
+                <p className="text-red-500 text-sm">
+                  Please fill out all fields.
+                </p>
+              )}
+
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="email">Email: </label>
                 <input
