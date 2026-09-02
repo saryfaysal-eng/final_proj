@@ -1,15 +1,50 @@
 import React from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 import Footer from "@/components/Footer";
 
-export default function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
   async function handleSignup(formData: FormData) {
     "use server";
+    const username = formData.get("username") as string;
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
 
-    const username = formData.get("username");
-    const email = formData.get("email");
-    const password = formData.get("password");
+    if (!username || !email || !password) {
+      redirect("/signup?error=missing");
+    }
+    const existingUser = await prisma.user.findFirst({
+      where: {
+        OR: [{ email }, { username }],
+      },
+    });
+
+    if (existingUser) {
+      redirect("/signup?error=exists");
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = await prisma.user.create({
+      data: {
+        username: username,
+        name: username,
+        email: email,
+        password: hashedPassword,
+      },
+    });
+    const cookieStore = await cookies();
+    cookieStore.set("userId", user.id, {
+      httpOnly: true,
+      path: "/",
+    });
+
     redirect("/dashboard");
   }
   return (
@@ -35,6 +70,17 @@ export default function SignupPage() {
                 <span className="text-6xl font-bold">Happening now.</span>
               </div>
 
+              {error === "exists" && (
+                <p className="text-red-500 text-sm">
+                  Username or Email is already taken.
+                </p>
+              )}
+              {error === "missing" && (
+                <p className="text-red-500 text-sm">
+                  Please fill out all fields.
+                </p>
+              )}
+
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="username">Username: </label>
                 <input
@@ -46,7 +92,6 @@ export default function SignupPage() {
                   required
                 />
               </div>
-
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="email">Email: </label>
                 <input
@@ -70,14 +115,12 @@ export default function SignupPage() {
                   required
                 />
               </div>
-
               <button
                 type="submit"
                 className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition"
               >
                 Create Account
               </button>
-
               <p className="text-xs text-center text-gray-400">
                 By continuing, you agree to our{" "}
                 <span>
