@@ -10,10 +10,12 @@
     "format": "biome format --write"
   },
   "dependencies": {
+    "@uploadthing/react": "^7.3.3",
     "better-auth": "^1.7.2",
     "next": "16.3.4",
     "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "react-dom": "19.2.8",
+    "uploadthing": "^7.7.4"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
@@ -31,6 +33,7 @@
   },
   "allowScripts": {
     "@prisma/engines@7.10.0": true,
-    "prisma@7.10.0": true
+    "prisma@7.10.0": true,
+    "msgpackr-extract@3.0.4": true
   }
 }
