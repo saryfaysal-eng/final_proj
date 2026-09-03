@@ -5,6 +5,7 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import Footer from "@/components/Footer";
+import PasswordInput from "@/components/PasswordInput";
 
 export default async function LoginPage({
   searchParams,
@@ -85,17 +86,7 @@ export default async function LoginPage({
                 />
               </div>
 
-              <div className="flex flex-col gap-1 w-full">
-                <label htmlFor="password">Password: </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  className="border border-gray-700 bg-transparent rounded p-2 text-white"
-                  required
-                />
-              </div>
-
+              <PasswordInput />
               <button
                 type="submit"
                 className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition"
