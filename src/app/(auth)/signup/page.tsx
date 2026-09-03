@@ -5,30 +5,55 @@ import { cookies } from "next/headers";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import Footer from "@/components/Footer";
+import PasswordInput from "@/components/PasswordInput";
 
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; username?: string; email?: string }>;
 }) {
-  const { error } = await searchParams;
+  const {
+    error,
+    username: prevUsername,
+    email: prevEmail,
+  } = await searchParams;
   async function handleSignup(formData: FormData) {
     "use server";
     const username = formData.get("username") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+    const usernameRegex = /^[a-z][a-z0-9._]{2,15}$/;
+    const emailRegex =
+      /^(?![0-9])[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,16}$/;
 
-    if (!username || !email || !password) {
-      redirect("/signup?error=missing");
+    if (!usernameRegex.test(username)) {
+      redirect(
+        `/signup?error=invalid_username&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
+      );
+    }
+
+    if (!emailRegex.test(email)) {
+      redirect(
+        `/signup?error=invalid_email&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
+      );
+    }
+
+    if (!passwordRegex.test(password)) {
+      redirect(
+        `/signup?error=weak_password&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
+      );
     }
     const existingUser = await prisma.user.findFirst({
       where: {
         OR: [{ email }, { username }],
       },
     });
-
     if (existingUser) {
-      redirect("/signup?error=exists");
+      redirect(
+        `/signup?error=exists&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
+      );
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
@@ -69,16 +94,16 @@ export default async function SignupPage({
               <div className="flex flex-col gap-1 w-full">
                 <span className="text-6xl font-bold">Happening now.</span>
               </div>
-
-              {error === "exists" && (
-                <p className="text-red-500 text-sm">
-                  Username or Email is already taken.
-                </p>
-              )}
-              {error === "missing" && (
-                <p className="text-red-500 text-sm">
-                  Please fill out all fields.
-                </p>
+              {error && (
+                <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-lg text-sm">
+                  {error === "exists" && "Username or Email is already taken."}
+                  {error === "invalid_username" &&
+                    "Username must be 3-16 chars (letters, digits, ., _), cannot start with a digit, contains at least letters with digits, underscores, or dots."}
+                  {error === "invalid_email" &&
+                    "Invalid email format. Must have at least 3 chars before @ and cannot start with a number."}
+                  {error === "weak_password" &&
+                    "Password must be 6-16 chars, must include lowercase, uppercase, number, and special character."}
+                </div>
               )}
 
               <div className="flex flex-col gap-1 w-full">
@@ -88,8 +113,13 @@ export default async function SignupPage({
                   name="username"
                   type="text"
                   placeholder="@ibra_kid"
+                  minLength={3}
+                  maxLength={16}
+                  pattern="^@?[a-z][a-z0-9._]{2,15}$"
+                  title="Must start with a letter and contain only lowercase letters, numbers, underscores, or dots (3-16 chars)."
                   className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500"
                   required
+                  defaultValue={prevUsername || ""}
                 />
               </div>
               <div className="flex flex-col gap-1 w-full">
@@ -98,23 +128,15 @@ export default async function SignupPage({
                   id="email"
                   name="email"
                   type="email"
+                  pattern="^(?![0-9])[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                  title="Must have at least 3 characters before @ and cannot start with a number."
                   placeholder="ibrahimsidiot@example.com"
                   className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500"
                   required
+                  defaultValue={prevEmail || ""}
                 />
               </div>
-
-              <div className="flex flex-col gap-1 w-full">
-                <label htmlFor="password">Password: </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  placeholder="Between 6-12 chars"
-                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500"
-                  required
-                />
-              </div>
+              <PasswordInput />
               <button
                 type="submit"
                 className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition"
@@ -155,7 +177,7 @@ export default async function SignupPage({
               </p>
 
               <p className="text-sm mt-2 text-gray-400 text-center">
-                Already have an account?{" "}
+                Alraedy have an account?{" "}
                 <Link href="/login" className="text-blue-500 underline">
                   Sign In
                 </Link>
