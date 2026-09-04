@@ -3,6 +3,31 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Sidebar from "@/components/Sidebar";
 import Link from "next/link";
+import { Metadata } from "next";
+
+type Props = {
+  params: Promise<{ username: string }>;
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { username } = await params;
+  const cleanUsername = decodeURIComponent(username)
+    .replace(/^@/, "")
+    .toLowerCase();
+
+  const user = await prisma.user.findUnique({
+    where: { username: cleanUsername },
+    select: { name: true, username: true },
+  });
+
+  if (!user) {
+    return { title: "User Not Found / X" };
+  }
+
+  return {
+    title: `${user.name} (@${user.username}) / X`,
+  };
+}
 
 export default async function ProfilePage({
   params,
