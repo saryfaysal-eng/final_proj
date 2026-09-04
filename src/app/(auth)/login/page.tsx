@@ -35,6 +35,9 @@ export default async function LoginPage({
     const cookieStore = await cookies();
     cookieStore.set("userId", user.id, {
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 3, //  3 hours
       path: "/",
     });
 

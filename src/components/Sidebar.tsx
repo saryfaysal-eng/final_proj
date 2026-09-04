@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { logout } from "@/app/actions/auth";
+
 import {
   Home,
   Search,
@@ -29,11 +31,11 @@ const navItems = [
 
 export default function Sidebar() {
   return (
-    <aside className="w-16 xl:w-64 h-screen sticky top-0 bg-black border-r border-gray-800 shrink-0 xl:p-4 flex flex-col justify-between text-white">
+    <aside className="w-16 xl:w-64 h-screen sticky top-0 bg-black border-r border-gray-800 shrink-0 p-3 xl:p-4 flex flex-col justify-between text-white">
       <div className="flex flex-col items-center xl:items-start">
         <Link
           href="/dashboard"
-          className="hover:bg-zinc-900 rounded-full w-fit transition flex items-center justify-center mb-3 ml-3"
+          className="flex items-center justify-center w-12 h-12 rounded-full hover:bg-zinc-900 transition mb-1"
         >
           <svg
             viewBox="0 0 24 24"
@@ -44,25 +46,34 @@ export default function Sidebar() {
           </svg>
         </Link>
         <nav className="w-full space-y-1">
-          {" "}
-          {/*change size 1440p cz lap diff */}
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center gap-4 p-3 hover:bg-zinc-900 rounded-full w-fit transition text-xl"
+                className="flex items-center gap-4 px-3 py-2.5 hover:bg-zinc-900 rounded-full w-fit transition text-xl"
               >
                 <Icon className="w-6 h-6 shrink-0" />
-                <span className="hidden xl:inline text-lg">{item.name}</span>
+                <span className="hidden xl:inline text-base">{item.name}</span>
               </Link>
             );
           })}
         </nav>
-        <button className="mt-4 bg-white cursor-pointer text-black font-bold py-3 xl:py-3 px-8 rounded-full w-full hidden xl:block hover:bg-opacity-90 transition">
+      </div>
+
+      <div className="flex flex-col gap-3 pb-2">
+        <button className="bg-white cursor-pointer text-black font-bold py-3 px-8 rounded-full w-full hidden xl:block hover:bg-white/90 transition">
           Post
         </button>
+        <form action={logout}>
+          <button
+            type="submit"
+            className="text-red-400 font-semibold text-sm hover:underline cursor-pointer px-3"
+          >
+            Log out
+          </button>
+        </form>
       </div>
     </aside>
   );
