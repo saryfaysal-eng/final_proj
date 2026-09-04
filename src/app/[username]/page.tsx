@@ -38,7 +38,6 @@ export default async function ProfilePage({
   const cleanUsername = decodeURIComponent(username)
     .replace(/^@/, "")
     .toLowerCase();
-
   const profileUser = await prisma.user.findUnique({
     where: { username: cleanUsername },
     select: {
@@ -48,7 +47,6 @@ export default async function ProfilePage({
       createdAt: true,
     },
   });
-
   if (!profileUser) {
     notFound();
   }
@@ -58,15 +56,14 @@ export default async function ProfilePage({
   const isOwner = currentUserId === profileUser.id;
 
   return (
-    <div className="min-h-screen bg-black text-white flex justify-center">
-      <div className="flex w-full max-w-7xl justify-center relative">
-        <div className="flex justify-end w-full max-w-22 xl:max-w-68.75">
+    <div className="h-screen overflow-hidden bg-black text-white flex justify-center">
+      <div className="flex w-full max-w-7xl justify-center relative h-full">
+        <div className="flex justify-end w-full max-w-22 xl:max-w-68.75 h-screen sticky top-0 shrink-0">
           <Sidebar />
         </div>
-
-        <main className="w-full max-w-122 border-x border-gray-800 min-h-screen shrink-0 mr-8">
-          <div className="flex items-center gap-8 px-4">
-            <div className="text-sm">
+        <main className="w-full max-w-122 border-x border-gray-800 h-screen overflow-y-auto shrink-0 mr-8 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+          <div className="flex items-center gap-8 px-4 py-2 sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800">
+            <div className="text-sm cursor-pointer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -96,7 +93,7 @@ export default async function ProfilePage({
               <div className="w-30 h-30 rounded-full bg-green-500 border-4 border-black -mt-16 relative" />
 
               {isOwner && (
-                <button className="border border-gray-600 rounded-full px-4 py-1.5 text-xs font-semibold text-white mb-2">
+                <button className="border border-gray-600 rounded-full px-4 py-1.5 text-xs font-semibold text-white mb-2 cursor-pointer hover:bg-zinc-900 transition">
                   Set up profile
                 </button>
               )}
@@ -150,13 +147,13 @@ export default async function ProfilePage({
           </div>
           <Link
             href={"/dashboard"}
-            className="text-green-500 flex justify-end items-end text-sm mt-4 hover:underline"
+            className="text-green-500 flex justify-end items-end text-sm m-10 mr-4 hover:underline"
           >
             Back to dashboard?
           </Link>
         </main>
 
-        <div className="hidden lg:block w-full max-w-87.5 shrink-0" />
+        <div className="hidden lg:block w-full max-w-87.5 shrink-0 h-screen sticky top-0" />
       </div>
     </div>
   );
