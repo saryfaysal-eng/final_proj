@@ -39,30 +39,94 @@ export default async function ProfilePage({
           <Sidebar />
         </div>
 
-        <main className="w-full max-w-122 border-x border-gray-800 min-h-screen p-4 shrink-0 mr-10">
-          <div className="flex justify-between items-start mb-4">
-            <div>
-              <h1 className="text-xl font-bold">
-                {profileUser.name || profileUser.username}
-              </h1>
-              <p className="text-gray-500 text-sm">@{profileUser.username}</p>
+        <main className="w-full max-w-122 border-x border-gray-800 min-h-screen shrink-0 mr-8">
+          <div className="flex items-center gap-8 px-4">
+            <div className="text-sm">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-arrow-left-icon lucide-arrow-left"
+              >
+                <path d="m12 19-7-7 7-7" />
+                <path d="M19 12H5" />
+              </svg>
             </div>
-
-            {isOwner && (
-              <button className="border border-gray-600 hover:bg-gray-900 text-white font-bold px-4 py-1.5 rounded-full text-sm cursor-pointer">
-                Edit profile
-              </button>
-            )}
+            <div>
+              <h1 className="text-md font-semibold">{profileUser.name}</h1>
+              <p className="text-gray-500 text-[10px]">Post number</p>
+            </div>
           </div>
 
-          <p className="text-xs text-gray-500 mt-3">
-            Joined{" "}
-            {new Date(profileUser.createdAt).toLocaleDateString("en-US", {
-              month: "long",
-              year: "numeric",
-            })}
-          </p>
-          <Link href={"/dashboard"} className="text-green-500">
+          <div className="w-full h-40 bg-gray-600"></div>
+
+          <div className="px-4">
+            <div className="flex justify-between items-end">
+              <div className="w-30 h-30 rounded-full bg-green-500 border-4 border-black -mt-16 relative" />
+
+              {isOwner && (
+                <button className="border border-gray-600 rounded-full px-4 py-1.5 text-xs font-semibold text-white mb-2">
+                  Set up profile
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="px-4 mt-2">
+            <h1 className="text-lg font-bold">{profileUser.name}</h1>
+            <p className="text-gray-500 text-xs">@{profileUser.username}</p>
+          </div>
+          <div className="px-4 mt-2 flex items-center gap-1 text-gray-500">
+            <span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="lucide lucide-calendar-days-icon lucide-calendar-days"
+              >
+                <path d="M8 2v3" />
+                <path d="M16 2v3" />
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <path d="M3 9h18" />
+                <path d="M8 13h.01" />
+                <path d="M12 13h.01" />
+                <path d="M16 13h.01" />
+                <path d="M8 17h.01" />
+                <path d="M12 17h.01" />
+                <path d="M16 17h.01" />
+              </svg>
+            </span>
+            <p className="text-xs">
+              Joined{" "}
+              {new Date(profileUser.createdAt).toLocaleDateString("en-US", {
+                month: "long",
+                year: "numeric",
+              })}
+            </p>
+          </div>
+          <div className="px-4 mt-2 flex items-center gap-4 text-gray-500 text-xs">
+            <p>
+              <span className="font-bold text-white">N</span> Following
+            </p>
+            <p>
+              <span className="font-bold text-white">N</span> Followers
+            </p>
+          </div>
+          <Link
+            href={"/dashboard"}
+            className="text-green-500 flex justify-end items-end text-sm mt-4 hover:underline"
+          >
             Back to dashboard?
           </Link>
         </main>
