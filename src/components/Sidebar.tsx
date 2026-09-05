@@ -16,15 +16,10 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { name: "Home", icon: Home, href: "" },
+  { name: "Home", icon: Home, href: "/home" },
   { name: "Explore", icon: Search, href: "" },
   { name: "Notifications", icon: Bell, href: "" },
-  { name: "Follow", icon: UserPlus, href: "" },
-  { name: "Chat", icon: MessageSquare, href: "" },
-  { name: "Grok", icon: Slash, href: "" },
   { name: "History", icon: Bookmark, href: "" },
-  { name: "Creator Studio", icon: Zap, href: "" },
-  { name: "Premium", icon: CheckCircle, href: "" },
   { name: "Profile", icon: User, href: "" },
   { name: "More", icon: MoreHorizontal, href: "" },
 ];
@@ -46,13 +41,15 @@ export default function Sidebar() {
           </svg>
         </Link>
         <nav className="w-full space-y-1">
+          {" "}
+          {/*change size 1440p cz lap built/biult diff */}
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.name}
                 href={item.href}
-                className="flex items-center gap-4 px-3 py-2.5 hover:bg-zinc-900 rounded-full w-fit transition text-xl"
+                className="flex items-center gap-4 hover:px-3 py-2.5 hover:bg-zinc-900 rounded-full w-fit transition-all text-xl ml-3"
               >
                 <Icon className="w-6 h-6 shrink-0" />
                 <span className="hidden xl:inline text-base">{item.name}</span>

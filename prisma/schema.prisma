@@ -23,8 +23,25 @@ model User {
   updatedAt     DateTime  @updatedAt
   sessions      Session[]
   accounts      Account[]
+  followers     Follow[]  @relation("following")
+  following     Follow[]  @relation("follower") 
+
 
   @@map("user")
+}
+
+model Follow {
+  followerId  String
+  followingId String
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId]) // duplicate follow thing (might change)
+  @@index([followerId])
+  @@index([followingId])
+  @@map("follow")
 }
 
 model Session {
