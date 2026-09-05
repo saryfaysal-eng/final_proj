@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 
   if (!user) {
-    return { title: "User Not Found / X" };
+    return { title: "User Not Found / X" }; // try this here since not tried
   }
 
   return {
@@ -185,7 +185,7 @@ export default async function ProfilePage({
             href={"/dashboard"}
             className="text-green-500 flex justify-end items-end text-sm m-10 mr-4 hover:underline"
           >
-            Back to dashboard?
+            Back to dashboard Screen?
           </Link>
         </main>
 
