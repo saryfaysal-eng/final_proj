@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Sidebar from "@/components/Sidebar";
+import FollowButton from "@/components/FollowBtn";
 import Link from "next/link";
 import { Metadata } from "next";
 
@@ -38,6 +39,10 @@ export default async function ProfilePage({
   const cleanUsername = decodeURIComponent(username)
     .replace(/^@/, "")
     .toLowerCase();
+
+  const cookieStore = await cookies();
+  const currentUserId = cookieStore.get("userId")?.value;
+
   const profileUser = await prisma.user.findUnique({
     where: { username: cleanUsername },
     select: {
@@ -45,15 +50,30 @@ export default async function ProfilePage({
       name: true,
       username: true,
       createdAt: true,
+      _count: {
+        select: {
+          followers: true,
+          following: true,
+        },
+      },
+      followers: currentUserId
+        ? {
+            where: {
+              followerId: currentUserId,
+            },
+          }
+        : false,
     },
   });
+
   if (!profileUser) {
     notFound();
   }
 
-  const cookieStore = await cookies();
-  const currentUserId = cookieStore.get("userId")?.value;
   const isOwner = currentUserId === profileUser.id;
+  const isFollowing = profileUser.followers
+    ? profileUser.followers.length > 0
+    : false;
 
   return (
     <div className="h-screen overflow-hidden bg-black text-white flex justify-center">
@@ -81,7 +101,9 @@ export default async function ProfilePage({
               </svg>
             </div>
             <div>
-              <h1 className="text-md font-semibold">{profileUser.name}</h1>
+              <h1 className="text-[22px] text-gray-50 font-semibold">
+                {profileUser.name}
+              </h1>
               <p className="text-gray-500 text-[10px]">Post number</p>
             </div>
           </div>
@@ -92,10 +114,18 @@ export default async function ProfilePage({
             <div className="flex justify-between items-end">
               <div className="w-30 h-30 rounded-full bg-green-500 border-4 border-black -mt-16 relative" />
 
-              {isOwner && (
+              {isOwner ? (
                 <button className="border border-gray-600 rounded-full px-4 py-1.5 text-xs font-semibold text-white mb-2 cursor-pointer hover:bg-zinc-900 transition">
                   Set up profile
                 </button>
+              ) : (
+                currentUserId && (
+                  <FollowButton
+                    currentUserId={currentUserId}
+                    targetUserId={profileUser.id}
+                    isFollowing={isFollowing}
+                  />
+                )
               )}
             </div>
           </div>
@@ -139,10 +169,16 @@ export default async function ProfilePage({
           </div>
           <div className="px-4 mt-2 flex items-center gap-4 text-gray-500 text-xs">
             <p>
-              <span className="font-bold text-white">N</span> Following
+              <span className="font-bold text-white">
+                {profileUser._count.following}
+              </span>{" "}
+              Following
             </p>
             <p>
-              <span className="font-bold text-white">N</span> Followers
+              <span className="font-bold text-white">
+                {profileUser._count.followers}
+              </span>{" "}
+              Followers
             </p>
           </div>
           <Link
