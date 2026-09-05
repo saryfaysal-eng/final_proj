@@ -9,7 +9,6 @@ type FollowButtonProps = {
   targetUserId: string;
   isFollowing: boolean;
 };
-
 export default function FollowButton({
   currentUserId,
   targetUserId,
@@ -25,24 +24,18 @@ export default function FollowButton({
 
   return (
     <div className="flex items-center gap-2 mb-2">
-      {/* 3 Dots Icon (Placeholder) */}
       <button className="border border-gray-600 p-2 rounded-full hover:bg-zinc-900 text-white cursor-pointer transition">
         <MoreHorizontal className="w-4 h-4" />
       </button>
 
-      {/* Direct Message Icon (Placeholder) */}
       <button className="border border-gray-600 p-2 rounded-full hover:bg-zinc-900 text-white cursor-pointer transition">
         <Mail className="w-4 h-4" />
       </button>
-
-      {/* Bell Icon (Shown only when following) */}
       {isFollowing && (
         <button className="border border-gray-600 p-2 rounded-full hover:bg-zinc-900 text-white cursor-pointer transition">
           <Bell className="w-4 h-4" />
         </button>
       )}
-
-      {/* Functional Follow / Following Button */}
       <button
         onClick={handleFollow}
         disabled={isPending}
