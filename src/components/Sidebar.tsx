@@ -17,7 +17,7 @@ import {
 
 const navItems = [
   { name: "Home", icon: Home, href: "/home" },
-  { name: "Explore", icon: Search, href: "" },
+  { name: "Explore", icon: Search, href: "/explore" },
   { name: "Notifications", icon: Bell, href: "" },
   { name: "History", icon: Bookmark, href: "" },
   { name: "Profile", icon: User, href: "" },
