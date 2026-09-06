@@ -1,48 +1,43 @@
-import React from "react";
+"use client";
+
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import PasswordInput from "@/components/PasswordInput";
+import { authClient } from "@/lib/auth-client";
 
-export default async function LoginPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string }>;
-}) {
-  const { error } = await searchParams;
-  async function handleLogin(formData: FormData) {
-    "use server";
+export default function LoginPage() {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const handleLogin = (formData: FormData) => {
+    setError(null);
+
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
 
     if (!email || !password) {
-      redirect("/login?error=missing");
+      setError("Please fill out all fields.");
+      return;
     }
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-    if (!user || !user.password) {
-      redirect("/login?error=invalid");
-    }
-    const isPasswordValid = await bcrypt.compare(password, user.password);
 
-    if (!isPasswordValid) {
-      redirect("/login?error=invalid");
-    }
-    const cookieStore = await cookies();
-    cookieStore.set("userId", user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 3, //  3 hours
-      path: "/",
-    });
+    startTransition(async () => {
+      const { error: authError } = await authClient.signIn.email({
+        email,
+        password,
+      });
 
-    redirect("/dashboard");
-  }
+      if (authError) {
+        setError(authError.message || "Invalid email or password.");
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    });
+  };
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col justify-between p-8">
@@ -67,16 +62,7 @@ export default async function LoginPage({
                 <span className="text-6xl font-bold">Happening now.</span>
               </div>
 
-              {error === "invalid" && (
-                <p className="text-red-500 text-sm">
-                  Invalid email or password.
-                </p>
-              )}
-              {error === "missing" && (
-                <p className="text-red-500 text-sm">
-                  Please fill out all fields.
-                </p>
-              )}
+              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="email">Email: </label>
@@ -86,16 +72,20 @@ export default async function LoginPage({
                   type="email"
                   className="border border-gray-700 bg-transparent rounded p-2 text-white"
                   required
+                  disabled={isPending}
                 />
               </div>
 
               <PasswordInput />
+
               <button
                 type="submit"
-                className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition"
+                disabled={isPending}
+                className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition disabled:opacity-70"
               >
-                Login
+                {isPending ? "Logging in..." : "Login"}
               </button>
+
               <p className="text-xs text-center text-gray-400">
                 By continuing, you agree to our{" "}
                 <span>

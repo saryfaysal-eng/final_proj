@@ -1,27 +1,24 @@
-import React from "react";
+"use client";
+
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { useRouter } from "next/navigation";
 import Footer from "@/components/Footer";
 import PasswordInput from "@/components/PasswordInput";
+import { authClient } from "@/lib/auth-client";
 
-export default async function SignupPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ error?: string; username?: string; email?: string }>;
-}) {
-  const {
-    error,
-    username: prevUsername,
-    email: prevEmail,
-  } = await searchParams;
-  async function handleSignup(formData: FormData) {
-    "use server";
+export default function SignupPage() {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const handleSignup = (formData: FormData) => {
+    setError(null);
+
     const username = formData.get("username") as string;
     const email = formData.get("email") as string;
     const password = formData.get("password") as string;
+
     const usernameRegex = /^[a-z][a-z0-9._]{2,15}$/;
     const emailRegex =
       /^(?![0-9])[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -29,52 +26,45 @@ export default async function SignupPage({
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,16}$/;
 
     if (!usernameRegex.test(username)) {
-      redirect(
-        `/signup?error=invalid_username&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
-      );
+      setError("invalid_username");
+      return;
     }
 
     if (!emailRegex.test(email)) {
-      redirect(
-        `/signup?error=invalid_email&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
-      );
+      setError("invalid_email");
+      return;
     }
 
     if (!passwordRegex.test(password)) {
-      redirect(
-        `/signup?error=weak_password&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
-      );
+      setError("weak_password");
+      return;
     }
-    const existingUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ email }, { username }],
-      },
-    });
-    if (existingUser) {
-      redirect(
-        `/signup?error=exists&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}`,
-      );
-    }
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
-      data: {
-        username: username,
-        name: username,
-        email: email,
-        password: hashedPassword,
-      },
-    });
-    const cookieStore = await cookies();
-    cookieStore.set("userId", user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 60 * 60 * 3, // 3 hours
-      path: "/",
-    });
 
-    redirect("/dashboard");
-  }
+    startTransition(async () => {
+      const { error: authError } = await authClient.signUp.email({
+        email,
+        password,
+        name: username,
+        username,
+      });
+
+      if (authError) {
+        if (
+          authError.status === 409 ||
+          authError.code === "USER_ALREADY_EXISTS"
+        ) {
+          setError("exists");
+        } else {
+          setError(authError.message || "An unexpected error occurred.");
+        }
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    });
+  };
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col justify-between p-8">
       <div className="flex flex-col md:flex-row-reverse items-center justify-between grow">
@@ -97,6 +87,7 @@ export default async function SignupPage({
               <div className="flex flex-col gap-1 w-full">
                 <span className="text-6xl font-bold">Happening now.</span>
               </div>
+
               {error && (
                 <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-lg text-sm">
                   {error === "exists" && "Username or Email is already taken."}
@@ -106,6 +97,12 @@ export default async function SignupPage({
                     "Invalid email format. Must have at least 3 chars before @ and cannot start with a number."}
                   {error === "weak_password" &&
                     "Password must be 6-16 chars, must include lowercase, uppercase, number, and special character."}
+                  {![
+                    "exists",
+                    "invalid_username",
+                    "invalid_email",
+                    "weak_password",
+                  ].includes(error) && error}
                 </div>
               )}
 
@@ -120,11 +117,12 @@ export default async function SignupPage({
                   maxLength={16}
                   pattern="^@?[a-z][a-z0-9._]{2,15}$"
                   title="Must start with a letter and contain only lowercase letters, numbers, underscores, or dots (3-16 chars)."
-                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500"
+                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500 disabled:opacity-50"
                   required
-                  defaultValue={prevUsername || ""}
+                  disabled={isPending}
                 />
               </div>
+
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="email">Email: </label>
                 <input
@@ -134,18 +132,22 @@ export default async function SignupPage({
                   pattern="^(?![0-9])[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
                   title="Must have at least 3 characters before @ and cannot start with a number."
                   placeholder="ibrahimsidiot@example.com"
-                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500"
+                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500 disabled:opacity-50"
                   required
-                  defaultValue={prevEmail || ""}
+                  disabled={isPending}
                 />
               </div>
+
               <PasswordInput />
+
               <button
                 type="submit"
-                className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition"
+                disabled={isPending}
+                className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
               >
-                Create Account
+                {isPending ? "Creating Account..." : "Create Account"}
               </button>
+
               <p className="text-xs text-center text-gray-400">
                 By continuing, you agree to our{" "}
                 <span>
@@ -180,7 +182,7 @@ export default async function SignupPage({
               </p>
 
               <p className="text-sm mt-2 text-gray-400 text-center">
-                Alraedy have an account?{" "}
+                Already have an account?{" "}
                 <Link href="/login" className="text-blue-500 underline">
                   Sign In
                 </Link>

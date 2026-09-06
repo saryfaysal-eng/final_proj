@@ -1,11 +1,32 @@
 import Sidebar from "@/components/Sidebar";
 import { Metadata } from "next";
+import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
+import { PostFeed } from "@/components/post-feed";
 
 export const metadata: Metadata = {
   title: "Home / X",
 };
 
-export default function HomePage() {
+export default async function HomePage() {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  const posts = await prisma.post.findMany({
+    orderBy: { createdAt: "desc" },
+    include: {
+      author: {
+        select: { id: true, name: true, username: true, image: true },
+      },
+      _count: {
+        select: { likes: true, comments: true },
+      },
+    },
+  });
+
+  if (!session?.user) return <div>Please sign in to view the feed.</div>;
   return (
     <div className="h-screen overflow-hidden bg-black text-white flex justify-center">
       <div className="flex h-full">
@@ -25,10 +46,13 @@ export default function HomePage() {
             </button>
           </div>
 
-          <div className="bg-red-500/10 min-h-screen p-4"></div>
+          <div className="min-h-screen p-4">
+            <PostFeed initialPosts={posts} currentUser={session.user} />
+          </div>
         </main>
         <div className="w-22 xl:w-68.75 h-screen shrink-0" />
       </div>
     </div>
   );
 }
+//Collekable

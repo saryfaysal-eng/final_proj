@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { cookies } from "next/headers";
-import { prisma } from "@/lib/prisma";
+import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 
 export default async function DashboardPage() {
-  const cookieStore = await cookies();
-  const userId = cookieStore.get("userId")?.value;
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-  // Fetch logged-in user details to get their username
-  const currentUser = userId
-    ? await prisma.user.findUnique({ where: { id: userId } })
-    : null;
+  const currentUser = session?.user;
 
   return (
     <div className="min-h-screen bg-black text-white p-8 flex flex-col gap-4">

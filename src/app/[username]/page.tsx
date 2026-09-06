@@ -1,6 +1,7 @@
-import { cookies } from "next/headers";
+import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import FollowButton from "@/components/FollowBtn";
 import Link from "next/link";
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 
   if (!user) {
-    return { title: "User Not Found / X" }; // try this here since not tried
+    return { title: "User Not Found / X" };
   }
 
   return {
@@ -40,8 +41,11 @@ export default async function ProfilePage({
     .replace(/^@/, "")
     .toLowerCase();
 
-  const cookieStore = await cookies();
-  const currentUserId = cookieStore.get("userId")?.value;
+  // Retrieve authenticated user ID securely via Better Auth
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  const currentUserId = session?.user?.id;
 
   const profileUser = await prisma.user.findUnique({
     where: { username: cleanUsername },
