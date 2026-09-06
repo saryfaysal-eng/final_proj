@@ -5,12 +5,7 @@ import {
   Home,
   Search,
   Bell,
-  UserPlus,
-  MessageSquare,
-  Slash,
   Bookmark,
-  Zap,
-  CheckCircle,
   User,
   MoreHorizontal,
 } from "lucide-react";
