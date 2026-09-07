@@ -9,34 +9,21 @@ import { authClient } from "@/lib/auth-client";
 
 export default function SignupPage() {
   const router = useRouter();
+
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const handleSignup = (formData: FormData) => {
+  const handleSignup = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     setError(null);
 
-    const username = formData.get("username") as string;
-    const email = formData.get("email") as string;
+    const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
 
-    const usernameRegex = /^[a-z][a-z0-9._]{2,15}$/;
-    const emailRegex =
-      /^(?![0-9])[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{6,16}$/;
-
-    if (!usernameRegex.test(username)) {
-      setError("invalid_username");
-      return;
-    }
-
-    if (!emailRegex.test(email)) {
-      setError("invalid_email");
-      return;
-    }
-
-    if (!passwordRegex.test(password)) {
-      setError("weak_password");
+    if (!email || !username || !password) {
+      setError("Please fill out all fields.");
       return;
     }
 
@@ -44,19 +31,13 @@ export default function SignupPage() {
       const { error: authError } = await authClient.signUp.email({
         email,
         password,
-        name: username,
         username,
+        name: username,
       });
 
       if (authError) {
-        if (
-          authError.status === 409 ||
-          authError.code === "USER_ALREADY_EXISTS"
-        ) {
-          setError("exists");
-        } else {
-          setError(authError.message || "An unexpected error occurred.");
-        }
+        (e.target as HTMLFormElement).password.value = "";
+        setError(authError.message || "Failed to sign up.");
         return;
       }
 
@@ -83,28 +64,15 @@ export default function SignupPage() {
         </div>
         <div className="w-full md:w-1/2 flex justify-center items-center p-6">
           <div className="border rounded-2xl border-gray-800 p-8 w-full max-w-md">
-            <form action={handleSignup} className="flex flex-col gap-4 w-full">
+            <form
+              onSubmit={handleSignup}
+              className="flex flex-col gap-4 w-full"
+            >
               <div className="flex flex-col gap-1 w-full">
                 <span className="text-6xl font-bold">Happening now.</span>
               </div>
 
-              {error && (
-                <div className="bg-red-500/10 border border-red-500 text-red-400 p-3 rounded-lg text-sm">
-                  {error === "exists" && "Username or Email is already taken."}
-                  {error === "invalid_username" &&
-                    "Username must be 3-16 chars (letters, digits, ., _), cannot start with a digit, contains at least letters with digits, underscores, or dots."}
-                  {error === "invalid_email" &&
-                    "Invalid email format. Must have at least 3 chars before @ and cannot start with a number."}
-                  {error === "weak_password" &&
-                    "Password must be 6-16 chars, must include lowercase, uppercase, number, and special character."}
-                  {![
-                    "exists",
-                    "invalid_username",
-                    "invalid_email",
-                    "weak_password",
-                  ].includes(error) && error}
-                </div>
-              )}
+              {error && <p className="text-red-500 text-sm">{error}</p>}
 
               <div className="flex flex-col gap-1 w-full">
                 <label htmlFor="username">Username: </label>
@@ -112,12 +80,10 @@ export default function SignupPage() {
                   id="username"
                   name="username"
                   type="text"
+                  value={username}
                   placeholder="@ibra_kid"
-                  minLength={3}
-                  maxLength={16}
-                  pattern="^@?[a-z][a-z0-9._]{2,15}$"
-                  title="Must start with a letter and contain only lowercase letters, numbers, underscores, or dots (3-16 chars)."
-                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500 disabled:opacity-50"
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="border border-gray-700 bg-transparent rounded p-2 text-white"
                   required
                   disabled={isPending}
                 />
@@ -129,69 +95,57 @@ export default function SignupPage() {
                   id="email"
                   name="email"
                   type="email"
-                  pattern="^(?![0-9])[a-zA-Z0-9._%+-]{3,}@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
-                  title="Must have at least 3 characters before @ and cannot start with a number."
-                  placeholder="ibrahimsidiot@example.com"
-                  className="border border-gray-700 bg-transparent rounded p-2 text-white placeholder-gray-500 disabled:opacity-50"
+                  placeholder="@ibrahimsidiot@gmail.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="border border-gray-700 bg-transparent rounded p-2 text-white"
                   required
                   disabled={isPending}
                 />
               </div>
-
               <PasswordInput />
 
               <button
                 type="submit"
                 disabled={isPending}
-                className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition disabled:opacity-50 disabled:cursor-not-allowed flex justify-center items-center"
+                className="bg-white text-black font-semibold px-4 py-2 rounded mt-2 cursor-pointer w-full hover:bg-gray-200 transition disabled:opacity-70"
               >
-                {isPending ? "Creating Account..." : "Create Account"}
+                {isPending ? "Signing up..." : "Sign Up"}
               </button>
 
               <p className="text-xs text-center text-gray-400">
                 By continuing, you agree to our{" "}
-                <span>
-                  <a
-                    href="https://x.com/en/tos"
-                    className="text-white font-bold"
-                  >
-                    Terms of Service
-                  </a>
-                </span>
+                <a href="https://x.com/en/tos" className="text-white font-bold">
+                  Terms of Service
+                </a>
                 ,{" "}
-                <span>
-                  <a
-                    href="https://x.com/privacy"
-                    className="text-white font-bold"
-                    target="_blank"
-                  >
-                    Privacy Policy{" "}
-                  </a>
-                </span>
+                <a
+                  href="https://x.com/privacy"
+                  className="text-white font-bold"
+                  target="_blank"
+                >
+                  Privacy Policy
+                </a>{" "}
                 and{" "}
-                <span>
-                  <a
-                    href="https://help.x.com/en/rules-and-policies/x-cookies"
-                    target="_blank"
-                    className="font-bold text-white"
-                  >
-                    Cookie Use
-                  </a>
-                </span>
+                <a
+                  href="https://help.x.com/en/rules-and-policies/x-cookies"
+                  target="_blank"
+                  className="font-bold text-white"
+                >
+                  Cookie Use
+                </a>
                 .
               </p>
-
               <p className="text-sm mt-2 text-gray-400 text-center">
                 Already have an account?{" "}
                 <Link href="/login" className="text-blue-500 underline">
-                  Sign In
+                  Log in
                 </Link>
               </p>
             </form>
           </div>
         </div>
       </div>
-
       <Footer />
     </div>
   );
