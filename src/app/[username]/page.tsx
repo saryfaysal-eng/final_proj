@@ -1,11 +1,13 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import FollowButton from "@/components/FollowBtn";
-import Link from "next/link";
-import { Metadata } from "next";
+import SetUpProfWrapper from "@/components/SetUpProfWrapper";
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -41,7 +43,6 @@ export default async function ProfilePage({
     .replace(/^@/, "")
     .toLowerCase();
 
-  // Retrieve authenticated user ID securely via Better Auth
   const session = await auth.api.getSession({
     headers: await headers(),
   });
@@ -53,6 +54,9 @@ export default async function ProfilePage({
       id: true,
       name: true,
       username: true,
+      bio: true,
+      image: true,
+      coverImage: true,
       createdAt: true,
       _count: {
         select: {
@@ -112,16 +116,36 @@ export default async function ProfilePage({
             </div>
           </div>
 
-          <div className="w-full h-40 bg-gray-600"></div>
+          <div className="w-full h-40 bg-gray-600 relative">
+            {profileUser.coverImage && (
+              <Image
+                src={profileUser.coverImage}
+                alt="Banner"
+                fill
+                className="object-cover"
+              />
+            )}
+          </div>
 
           <div className="px-4">
             <div className="flex justify-between items-end">
-              <div className="w-30 h-30 rounded-full bg-green-500 border-4 border-black -mt-16 relative" />
+              <div className="w-30 h-30 rounded-full border-4 border-black -mt-16 relative bg-zinc-800 overflow-hidden">
+                {profileUser.image ? (
+                  <Image
+                    src={profileUser.image}
+                    alt={profileUser.name || "Avatar"}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-zinc-700 flex items-center justify-center text-3xl">
+                    👤
+                  </div>
+                )}
+              </div>
 
               {isOwner ? (
-                <button className="border border-gray-600 rounded-full px-4 py-1.5 text-xs font-semibold text-white mb-2 cursor-pointer hover:bg-zinc-900 transition">
-                  Set up profile
-                </button>
+                <SetUpProfWrapper initialData={profileUser} />
               ) : (
                 currentUserId && (
                   <FollowButton
@@ -133,10 +157,15 @@ export default async function ProfilePage({
               )}
             </div>
           </div>
+
           <div className="px-4 mt-2">
             <h1 className="text-lg font-bold">{profileUser.name}</h1>
             <p className="text-gray-500 text-xs">@{profileUser.username}</p>
+            {profileUser.bio && (
+              <p className="mt-2 text-sm text-gray-200">{profileUser.bio}</p>
+            )}
           </div>
+
           <div className="px-4 mt-2 flex items-center gap-1 text-gray-500">
             <span>
               <svg
@@ -171,6 +200,7 @@ export default async function ProfilePage({
               })}
             </p>
           </div>
+
           <div className="px-4 mt-2 flex items-center gap-4 text-gray-500 text-xs">
             <p>
               <span className="font-bold text-white">
@@ -185,6 +215,7 @@ export default async function ProfilePage({
               Followers
             </p>
           </div>
+
           <Link
             href={"/dashboard"}
             className="text-green-500 flex justify-end items-end text-sm m-10 mr-4 hover:underline"
