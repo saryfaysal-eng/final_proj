@@ -3,11 +3,13 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Metadata } from "next";
+import { BadgeCheck } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
 import FollowButton from "@/components/FollowBtn";
 import SetUpProfWrapper from "@/components/SetUpProfWrapper";
+import Verification from "@/components/Verifiication";
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -54,6 +56,8 @@ export default async function ProfilePage({
       id: true,
       name: true,
       username: true,
+      email: true,
+      emailVerified: true,
       bio: true,
       image: true,
       coverImage: true,
@@ -109,8 +113,11 @@ export default async function ProfilePage({
               </svg>
             </div>
             <div>
-              <h1 className="text-[22px] text-gray-50 font-semibold">
+              <h1 className="text-[22px] text-gray-50 font-semibold flex items-center gap-1">
                 {profileUser.name}
+                {profileUser.emailVerified && (
+                  <BadgeCheck className="w-5 h-5 text-white fill-sky-500 shrink-0" />
+                )}
               </h1>
               <p className="text-gray-500 text-[10px]">Post number</p>
             </div>
@@ -159,7 +166,20 @@ export default async function ProfilePage({
           </div>
 
           <div className="px-4 mt-2">
-            <h1 className="text-lg font-bold">{profileUser.name}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-bold">{profileUser.name}</h1>
+              {profileUser.emailVerified ? (
+                <BadgeCheck className="w-5 h-5 text-white fill-sky-500 shrink-0" />
+              ) : (
+                isOwner && (
+                  <Verification
+                    userId={profileUser.id}
+                    email={profileUser.email}
+                    username={profileUser.username}
+                  />
+                )
+              )}
+            </div>
             <p className="text-gray-500 text-xs">@{profileUser.username}</p>
             {profileUser.bio && (
               <p className="mt-2 text-sm text-gray-200">{profileUser.bio}</p>
@@ -202,18 +222,24 @@ export default async function ProfilePage({
           </div>
 
           <div className="px-4 mt-2 flex items-center gap-4 text-gray-500 text-xs">
-            <p>
+            <Link
+              href={`/${profileUser.username}/following`}
+              className="hover:underline flex items-center gap-1"
+            >
               <span className="font-bold text-white">
                 {profileUser._count.following}
               </span>{" "}
               Following
-            </p>
-            <p>
+            </Link>
+            <Link
+              href={`/${profileUser.username}/followers`}
+              className="hover:underline flex items-center gap-1"
+            >
               <span className="font-bold text-white">
                 {profileUser._count.followers}
               </span>{" "}
               Followers
-            </p>
+            </Link>
           </div>
 
           <Link

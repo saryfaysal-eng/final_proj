@@ -16,6 +16,9 @@ type Props = {
   };
 };
 
+const MAX_NAME_LENGTH = 30;
+const MAX_BIO_LENGTH = 160;
+
 export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
   const [step, setStep] = useState<"avatar" | "banner" | "details">("avatar");
   const [name, setName] = useState(initialData.name || "");
@@ -66,7 +69,7 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
       <div className="w-full max-w-lg rounded-2xl bg-black border border-gray-800 p-6 shadow-2xl relative text-white">
         <button
           onClick={onClose}
-          className="absolute top-4 left-4 p-1 rounded-full hover:bg-zinc-900 transition"
+          className="absolute top-4 left-4 p-1 rounded-full hover:bg-zinc-900 transition cursor-pointer"
         >
           <svg
             className="w-5 h-5 text-white"
@@ -92,7 +95,7 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
           <div className="flex flex-col items-center py-6 space-y-6">
             <h2 className="text-2xl font-bold">Pick a profile picture</h2>
             <p className="text-gray-500 text-sm">
-              Have a favorite selfie? Upload it now.
+              Have a favorite selfie? Upload it now!
             </p>
 
             <label className="relative cursor-pointer group">
@@ -106,7 +109,7 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
                   />
                 ) : (
                   <div className="w-full h-full bg-gray-600 flex items-center justify-center text-4xl">
-                    👤 {/* emoji */}
+                    👤
                   </div>
                 )}
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-80 group-hover:opacity-100 transition">
@@ -142,7 +145,7 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
 
             <button
               onClick={() => setStep("banner")}
-              className="w-full py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition"
+              className="w-full py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition cursor-pointer"
             >
               {uploadingAvatar
                 ? "Uploading..."
@@ -204,13 +207,13 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
             <div className="flex w-full gap-3">
               <button
                 onClick={() => setStep("avatar")}
-                className="w-1/2 py-3 rounded-full border border-gray-600 font-bold hover:bg-zinc-900 transition"
+                className="w-1/2 py-3 rounded-full border border-gray-600 font-bold hover:bg-zinc-900 transition cursor-pointer"
               >
                 Back
               </button>
               <button
                 onClick={() => setStep("details")}
-                className="w-1/2 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition"
+                className="w-1/2 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition cursor-pointer"
               >
                 {uploadingBanner
                   ? "Uploading..."
@@ -229,22 +232,34 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
             </h2>
 
             <div className="space-y-4">
-              <div className="border border-gray-700 rounded-lg p-2 focus-within:border-sky-500 transition">
-                <label className="block text-xs text-gray-500">
-                  Display Name
-                </label>
+              <div className="border border-gray-700 rounded-lg p-2 focus-within:border-sky-500 transition relative">
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <label htmlFor="display-name">Display Name</label>
+                  <span>
+                    {name.length} / {MAX_NAME_LENGTH}
+                  </span>
+                </div>
                 <input
+                  id="display-name"
                   type="text"
+                  maxLength={MAX_NAME_LENGTH}
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full bg-transparent text-white outline-none text-sm pt-1"
                 />
               </div>
 
-              <div className="border border-gray-700 rounded-lg p-2 focus-within:border-sky-500 transition">
-                <label className="block text-xs text-gray-500">Bio</label>
+              <div className="border border-gray-700 rounded-lg p-2 focus-within:border-sky-500 transition relative">
+                <div className="flex justify-between items-center text-xs text-gray-500">
+                  <label htmlFor="bio">Bio</label>
+                  <span>
+                    {bio.length} / {MAX_BIO_LENGTH}
+                  </span>
+                </div>
                 <textarea
+                  id="bio"
                   rows={3}
+                  maxLength={MAX_BIO_LENGTH}
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
                   className="w-full bg-transparent text-white outline-none text-sm pt-1 resize-none"
@@ -256,14 +271,14 @@ export default function EditProfPage({ isOpen, onClose, initialData }: Props) {
             <div className="flex w-full gap-3 pt-2">
               <button
                 onClick={() => setStep("banner")}
-                className="w-1/2 py-3 rounded-full border border-gray-600 font-bold hover:bg-zinc-900 transition"
+                className="w-1/2 py-3 rounded-full border border-gray-600 font-bold hover:bg-zinc-900 transition cursor-pointer"
               >
                 Back
               </button>
               <button
                 onClick={handleSave}
                 disabled={isSubmitting}
-                className="w-1/2 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition disabled:opacity-50"
+                className="w-1/2 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 transition disabled:opacity-50 cursor-pointer"
               >
                 {isSubmitting ? "Saving..." : "Save Profile"}
               </button>
