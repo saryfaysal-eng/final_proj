@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
-import { logout } from "@/app/actions/auth";
 import Image from "next/image";
 
 import {
@@ -103,15 +102,13 @@ export default async function Sidebar() {
               <MoreHorizontal className="w-5 h-5 text-gray-500 hidden xl:block shrink-0" />
             </summary>
 
-            <div className="absolute bottom-full mb-3 left-0 w-60 bg-black border border-gray-800 rounded-2xl shadow-2xl py-3 z-50">
-              <form action={logout}>
-                <button
-                  type="submit"
-                  className="w-full text-left px-4 py-3 hover:bg-zinc-900 text-sm text-white font-semibold transition cursor-pointer"
-                >
-                  Log out @{currentUser.username}
-                </button>
-              </form>
+            <div className="absolute bottom-full mb-3 left-0 w-60 bg-black border border-gray-800 rounded-2xl shadow-2xl z-50">
+              <Link
+                href="/logout"
+                className="w-full text-left px-4 py-3 hover:bg-zinc-900 active:bg-zinc-800 rounded-2xl text-sm text-white font-semibold transition cursor-pointer block"
+              >
+                Log out @{currentUser.username}
+              </Link>
             </div>
           </details>
         ) : (

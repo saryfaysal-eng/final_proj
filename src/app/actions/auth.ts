@@ -1,21 +1,19 @@
 "use server";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 
 export async function logout() {
   const cookieStore = await cookies();
+  try {
+    await auth.api.signOut({
+      headers: await headers(),
+    });
+  } catch (error) {}
+  cookieStore.delete("better-auth.session_token");
+  cookieStore.delete("__Secure-better-auth.session_token");
   cookieStore.delete("userId");
-  redirect("/");
-}
 
-export async function setSessionCookie(userId: string) {
-  const cookieStore = await cookies();
-  cookieStore.set("userId", userId, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: 60 * 60 * 3, // 3 hours
-    path: "/",
-  });
+  redirect("/login");
 }
