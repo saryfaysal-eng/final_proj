@@ -122,7 +122,12 @@ model Comment {
   authorId  String
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
 
+  parentId  String?
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   Comment[] @relation("CommentReplies")
+  
   likes     CommentLike[]
+  
 
   @@index([postId, createdAt(sort: Asc)])
   @@index([authorId])

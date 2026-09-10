@@ -13,6 +13,7 @@ export default async function HomePage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+  if (!session?.user) return <div>Please sign in to view the feed.</div>;
 
   const posts = await prisma.post.findMany({
     orderBy: { createdAt: "desc" },
@@ -23,10 +24,53 @@ export default async function HomePage() {
       _count: {
         select: { likes: true, comments: true },
       },
+      likes: {
+        where: { userId: session.user.id },
+        select: { userId: true },
+      },
+      comments: {
+        where: { parentId: null },
+        orderBy: { createdAt: "asc" },
+        include: {
+          author: {
+            select: { id: true, name: true, username: true, image: true },
+          },
+          _count: { select: { likes: true } },
+          likes: {
+            where: { userId: session.user.id },
+            select: { userId: true },
+          },
+          replies: {
+            orderBy: { createdAt: "asc" },
+            include: {
+              author: {
+                select: { id: true, name: true, username: true, image: true },
+              },
+              _count: { select: { likes: true } },
+              likes: {
+                where: { userId: session.user.id },
+                select: { userId: true },
+              },
+            },
+          },
+        },
+      },
     },
   });
 
-  if (!session?.user) return <div>Please sign in to view the feed.</div>;
+  const formattedPosts = posts.map((post) => ({
+    ...post,
+    hasLiked: post.likes.length > 0,
+    comments: post.comments.map((comment) => ({
+      ...comment,
+      hasLiked: comment.likes.length > 0,
+      replies: comment.replies.map((reply) => ({
+        ...reply,
+        hasLiked: reply.likes.length > 0,
+      })),
+    })),
+  }));
+
   return (
     <div className="h-screen overflow-hidden bg-black text-white flex justify-center">
       <div className="flex h-full">
@@ -47,7 +91,10 @@ export default async function HomePage() {
           </div>
 
           <div className="min-h-screen p-4">
-            <PostFeed initialPosts={posts} currentUser={session.user} />
+            <PostFeed
+              initialPosts={formattedPosts}
+              currentUser={session.user}
+            />
           </div>
         </main>
         <div className="w-22 xl:w-68.75 h-screen shrink-0" />

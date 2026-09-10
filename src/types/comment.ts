@@ -1,21 +1,18 @@
-import { CommentWithAuthor } from "./comment";
-export type PostWithAuthor = {
+export type CommentWithAuthor = {
   id: string;
   content: string;
-  mediaUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
+  postId: string;
   authorId: string;
+  parentId: string | null;
   author: {
     id: string;
     name: string | null;
     username: string | null;
     image: string | null;
   };
-  _count: {
-    likes: number;
-    comments: number;
-  };
-  comments?: CommentWithAuthor[];
+  _count: { likes: number };
+  replies?: CommentWithAuthor[];
   hasLiked: boolean;
 };
