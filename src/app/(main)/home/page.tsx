@@ -114,7 +114,7 @@ export default async function HomePage() {
           <Sidebar />
         </div>
 
-        <main className="w-142 border-x border-gray-800 h-screen overflow-y-auto shrink-0 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <main className="w-150 border-x border-gray-800 h-screen overflow-y-auto shrink-0 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800 flex items-center h-13 font-bold text-sm">
             <button className="flex-1 h-full flex items-center justify-center hover:bg-zinc-900/60 transition">
               <span className="relative h-full flex items-center border-b-4 border-sky-500 font-bold">
