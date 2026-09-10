@@ -2,15 +2,15 @@ import Link from "next/link";
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import Image from "next/image";
-
 import {
   Home,
   Search,
-  Bell, //Me when taco bell:
+  Bell,
   Bookmark,
   User,
   MoreHorizontal,
 } from "lucide-react";
+import CreatePostModal from "@/components/CreatePostModal";
 
 export default async function Sidebar() {
   const session = await auth.api.getSession({
@@ -25,8 +25,8 @@ export default async function Sidebar() {
   const navItems = [
     { name: "Home", icon: Home, href: "/home" },
     { name: "Explore", icon: Search, href: "/explore" },
-    { name: "Notifications", icon: Bell, href: "" },
-    { name: "History", icon: Bookmark, href: "" },
+    { name: "Notifications", icon: Bell, href: "/notification" },
+    { name: "History", icon: Bookmark, href: "/history" },
     { name: "Profile", icon: User, href: profileHref },
     { name: "More", icon: MoreHorizontal, href: "" },
   ];
@@ -47,8 +47,6 @@ export default async function Sidebar() {
           </svg>
         </Link>
         <nav className="w-full space-y-1">
-          {" "}
-          {/*change size 1440p cz lap built/biult diff */}
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -64,9 +62,16 @@ export default async function Sidebar() {
           })}
         </nav>
 
-        <button className="bg-white cursor-pointer text-black font-bold py-3 px-8 rounded-full w-full hidden xl:block hover:bg-white/90 transition mt-4">
-          Post
-        </button>
+        {currentUser ? (
+          <CreatePostModal currentUser={currentUser} />
+        ) : (
+          <Link
+            href="/compose/post"
+            className="bg-white hover:bg-white/90 text-black font-bold py-3 px-8 rounded-full w-full hidden xl:block text-center transition mt-4"
+          >
+            Post
+          </Link>
+        )}
       </div>
 
       <div className="flex flex-col gap-3 pb-2 w-full">

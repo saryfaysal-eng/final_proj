@@ -33,11 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${user.name} (@${user.username}) / X`,
+    title: `Posts with replies by ${user.name} (@${user.username}) / X`,
   };
 }
 
-export default async function ProfilePage({
+export default async function ProfileRepliesPage({
   params,
 }: {
   params: Promise<{ username: string }>;
@@ -90,8 +90,14 @@ export default async function ProfilePage({
     ? profileUser.followers.length > 0
     : false;
 
-  const userPosts = await prisma.post.findMany({
-    where: { authorId: profileUser.id },
+  const postsWithUserReplies = await prisma.post.findMany({
+    where: {
+      comments: {
+        some: {
+          authorId: profileUser.id,
+        },
+      },
+    },
     orderBy: { createdAt: "desc" },
     include: {
       author: {
@@ -140,7 +146,7 @@ export default async function ProfilePage({
     },
   });
 
-  const formattedPosts = userPosts.map((post) => ({
+  const formattedPosts = postsWithUserReplies.map((post) => ({
     ...post,
     hasLiked: Array.isArray(post.likes) && post.likes.length > 0,
     comments: post.comments.map((comment) => ({
