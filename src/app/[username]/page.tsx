@@ -10,6 +10,8 @@ import Sidebar from "@/components/Sidebar";
 import FollowButton from "@/components/FollowBtn";
 import SetUpProfWrapper from "@/components/SetUpProfWrapper";
 import Verification from "@/components/Verifiication";
+import ProfileTabs from "@/components/ProfileTabs";
+import { PostFeed } from "@/components/post-feed";
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -66,6 +68,7 @@ export default async function ProfilePage({
         select: {
           followers: true,
           following: true,
+          posts: true,
         },
       },
       followers: currentUserId
@@ -87,6 +90,69 @@ export default async function ProfilePage({
     ? profileUser.followers.length > 0
     : false;
 
+  const userPosts = await prisma.post.findMany({
+    where: { authorId: profileUser.id },
+    orderBy: { createdAt: "desc" },
+    include: {
+      author: {
+        select: { id: true, name: true, username: true, image: true },
+      },
+      _count: {
+        select: { likes: true, comments: true },
+      },
+      likes: currentUserId
+        ? {
+            where: { userId: currentUserId },
+            select: { userId: true },
+          }
+        : false,
+      comments: {
+        where: { parentId: null },
+        orderBy: { createdAt: "asc" },
+        include: {
+          author: {
+            select: { id: true, name: true, username: true, image: true },
+          },
+          _count: { select: { likes: true } },
+          likes: currentUserId
+            ? {
+                where: { userId: currentUserId },
+                select: { userId: true },
+              }
+            : false,
+          replies: {
+            orderBy: { createdAt: "asc" },
+            include: {
+              author: {
+                select: { id: true, name: true, username: true, image: true },
+              },
+              _count: { select: { likes: true } },
+              likes: currentUserId
+                ? {
+                    where: { userId: currentUserId },
+                    select: { userId: true },
+                  }
+                : false,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const formattedPosts = userPosts.map((post) => ({
+    ...post,
+    hasLiked: Array.isArray(post.likes) && post.likes.length > 0,
+    comments: post.comments.map((comment) => ({
+      ...comment,
+      hasLiked: Array.isArray(comment.likes) && comment.likes.length > 0,
+      replies: comment.replies.map((reply) => ({
+        ...reply,
+        hasLiked: Array.isArray(reply.likes) && reply.likes.length > 0,
+      })),
+    })),
+  }));
+
   return (
     <div className="h-screen overflow-hidden bg-black text-white flex justify-center">
       <div className="flex w-full max-w-7xl justify-center relative h-full">
@@ -95,7 +161,7 @@ export default async function ProfilePage({
         </div>
         <main className="w-full max-w-122 border-x border-gray-800 h-screen overflow-y-auto shrink-0 mr-8 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-center gap-8 px-4 py-2 sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800">
-            <div className="text-sm cursor-pointer">
+            <Link href="/home" className="text-sm cursor-pointer">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
@@ -106,12 +172,11 @@ export default async function ProfilePage({
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="lucide lucide-arrow-left-icon lucide-arrow-left"
               >
                 <path d="m12 19-7-7 7-7" />
                 <path d="M19 12H5" />
               </svg>
-            </div>
+            </Link>
             <div>
               <h1 className="text-[22px] text-gray-50 font-semibold flex items-center gap-1">
                 {profileUser.name}
@@ -119,7 +184,10 @@ export default async function ProfilePage({
                   <BadgeCheck className="w-5 h-5 text-white fill-sky-500 shrink-0" />
                 )}
               </h1>
-              <p className="text-gray-500 text-[10px]">Post number</p>
+              <p className="text-gray-500 text-[10px]">
+                {profileUser._count.posts}{" "}
+                {profileUser._count.posts === 1 ? "post" : "posts"}
+              </p>
             </div>
           </div>
 
@@ -187,31 +255,28 @@ export default async function ProfilePage({
           </div>
 
           <div className="px-4 mt-2 flex items-center gap-1 text-gray-500">
-            <span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="12"
-                height="12"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="lucide lucide-calendar-days-icon lucide-calendar-days"
-              >
-                <path d="M8 2v3" />
-                <path d="M16 2v3" />
-                <rect x="3" y="3" width="18" height="18" rx="2" />
-                <path d="M3 9h18" />
-                <path d="M8 13h.01" />
-                <path d="M12 13h.01" />
-                <path d="M16 13h.01" />
-                <path d="M8 17h.01" />
-                <path d="M12 17h.01" />
-                <path d="M16 17h.01" />
-              </svg>
-            </span>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <path d="M8 2v3" />
+              <path d="M16 2v3" />
+              <rect x="3" y="3" width="18" height="18" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M8 13h.01" />
+              <path d="M12 13h.01" />
+              <path d="M16 13h.01" />
+              <path d="M8 17h.01" />
+              <path d="M12 17h.01" />
+              <path d="M16 17h.01" />
+            </svg>
             <p className="text-xs">
               Joined{" "}
               {new Date(profileUser.createdAt).toLocaleDateString("en-US", {
@@ -240,6 +305,22 @@ export default async function ProfilePage({
               </span>{" "}
               Followers
             </Link>
+          </div>
+
+          <ProfileTabs username={profileUser.username} />
+
+          <div className="min-h-screen p-4">
+            {session?.user ? (
+              <PostFeed
+                initialPosts={formattedPosts}
+                currentUser={session.user}
+                hideCreatePost={true}
+              />
+            ) : (
+              <p className="text-center text-zinc-500 text-sm mt-4">
+                Sign in to interact with posts.
+              </p>
+            )}
           </div>
         </main>
 

@@ -13,9 +13,14 @@ import LikeButton from "./LikeButton";
 interface PostFeedProps {
   initialPosts: PostWithAuthor[];
   currentUser: CurrentUser;
+  hideCreatePost?: boolean;
 }
 
-export function PostFeed({ initialPosts, currentUser }: PostFeedProps) {
+export function PostFeed({
+  initialPosts,
+  currentUser,
+  hideCreatePost = false,
+}: PostFeedProps) {
   const [optimisticPosts, addOptimisticPost] = useOptimistic(
     initialPosts,
     (currentPosts, newPost: PostWithAuthor) => [newPost, ...currentPosts],
@@ -23,12 +28,16 @@ export function PostFeed({ initialPosts, currentUser }: PostFeedProps) {
 
   return (
     <div>
-      <CreatePostForm
-        currentUser={currentUser}
-        addOptimisticPost={addOptimisticPost}
-      />
+      {!hideCreatePost && (
+        <CreatePostForm
+          currentUser={currentUser}
+          addOptimisticPost={addOptimisticPost}
+        />
+      )}
 
-      <div className="divide-y divide-zinc-800 border-t border-zinc-800 mt-2">
+      <div
+        className={`divide-y divide-zinc-800 ${!hideCreatePost ? "border-t border-zinc-800 mt-2" : ""}`}
+      >
         {optimisticPosts.map((post) => (
           <PostItem key={post.id} post={post} currentUser={currentUser} />
         ))}
@@ -36,7 +45,6 @@ export function PostFeed({ initialPosts, currentUser }: PostFeedProps) {
     </div>
   );
 }
-
 function PostItem({
   post,
   currentUser,
