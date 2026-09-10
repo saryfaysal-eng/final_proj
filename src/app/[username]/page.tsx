@@ -12,6 +12,8 @@ import SetUpProfWrapper from "@/components/SetUpProfWrapper";
 import Verification from "@/components/Verifiication";
 import ProfileTabs from "@/components/ProfileTabs";
 import { PostFeed } from "@/components/post-feed";
+import { Suspense } from "react";
+import SearchInput from "@/components/SearchInput";
 
 type Props = {
   params: Promise<{ username: string }>;
@@ -177,7 +179,7 @@ export default async function ProfilePage({
         <div className="flex justify-end w-full max-w-22 xl:max-w-68.75 h-screen sticky top-0 shrink-0">
           <Sidebar />
         </div>
-        <main className="w-full max-w-150 border-x border-gray-800 h-screen overflow-y-auto shrink-0 mr-8 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        <main className="w-full max-w-140 border-x border-gray-800 h-screen overflow-y-auto shrink-0 mr-8 scrollbar-none [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex items-center gap-8 px-4 py-2 sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800">
             <Link href="/home" className="text-sm cursor-pointer">
               <svg
@@ -342,7 +344,15 @@ export default async function ProfilePage({
           </div>
         </main>
 
-        <div className="hidden lg:block w-full max-w-87.5 shrink-0 h-screen sticky top-0" />
+        <div className="hidden lg:block w-full max-w-87.5 shrink-0 h-screen sticky top-0 p-4">
+          <Suspense
+            fallback={
+              <div className="w-full h-14 bg-zinc-900 rounded-full animate-pulse" />
+            }
+          >
+            <SearchInput />
+          </Suspense>
+        </div>
       </div>
     </div>
   );

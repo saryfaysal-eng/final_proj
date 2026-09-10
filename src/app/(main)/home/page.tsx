@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { PostFeed } from "@/components/post-feed";
+import { Suspense } from "react";
+import SearchInput from "@/components/SearchInput";
 
 export const metadata: Metadata = {
   title: "Home / X",
@@ -131,7 +133,15 @@ export default async function HomePage() {
           </div>
         </main>
 
-        <div className="w-22 xl:w-68.75 h-screen shrink-0" />
+        <div className="hidden lg:block w-22 xl:w-68.75 h-screen sticky top-0 shrink-0 p-4">
+          <Suspense
+            fallback={
+              <div className="w-full h-14 bg-zinc-900 rounded-full animate-pulse" />
+            }
+          >
+            <SearchInput />
+          </Suspense>
+        </div>
       </div>
     </div>
   );
