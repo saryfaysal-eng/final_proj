@@ -241,13 +241,6 @@ export default async function ProfilePage({
               Followers
             </Link>
           </div>
-
-          <Link
-            href={"/dashboard"}
-            className="text-green-500 flex justify-end items-end text-sm m-10 mr-4 hover:underline"
-          >
-            Back to dashboard Screen?
-          </Link>
         </main>
 
         <div className="hidden lg:block w-full max-w-87.5 shrink-0 h-screen sticky top-0" />
