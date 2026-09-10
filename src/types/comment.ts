@@ -11,6 +11,7 @@ export type CommentWithAuthor = {
     name: string | null;
     username: string | null;
     image: string | null;
+    emailVerified: boolean;
   };
   _count: { likes: number };
   replies?: CommentWithAuthor[];

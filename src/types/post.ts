@@ -11,6 +11,7 @@ export type PostWithAuthor = {
     name: string | null;
     username: string | null;
     image: string | null;
+    emailVerified: boolean;
   };
   _count: {
     likes: number;

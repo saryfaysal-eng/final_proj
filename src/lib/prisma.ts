@@ -28,6 +28,6 @@ import { neonConfig } from "@neondatabase/serverless";
 neonConfig.fetchFunction = (input: RequestInfo | URL, init?: RequestInit) => {
   return fetch(input, {
     ...init,
-    signal: init?.signal ?? AbortSignal.timeout(30000),
+    signal: init?.signal ?? AbortSignal.timeout(300000),
   });
 };

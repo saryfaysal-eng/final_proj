@@ -13,13 +13,37 @@ export default async function HomePage() {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
+
   if (!session?.user) return <div>Please sign in to view the feed.</div>;
 
+  const following = await prisma.follow.findMany({
+    where: {
+      followerId: session.user.id,
+    },
+    select: {
+      followingId: true,
+    },
+  });
+
+  const followingIds = following.map((f) => f.followingId);
+  const feedUserIds = [...followingIds, session.user.id];
+
   const posts = await prisma.post.findMany({
+    where: {
+      authorId: {
+        in: feedUserIds,
+      },
+    },
     orderBy: { createdAt: "desc" },
     include: {
       author: {
-        select: { id: true, name: true, username: true, image: true },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+          emailVerified: true,
+        },
       },
       _count: {
         select: { likes: true, comments: true },
@@ -33,7 +57,13 @@ export default async function HomePage() {
         orderBy: { createdAt: "asc" },
         include: {
           author: {
-            select: { id: true, name: true, username: true, image: true },
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              image: true,
+              emailVerified: true,
+            },
           },
           _count: { select: { likes: true } },
           likes: {
@@ -44,7 +74,13 @@ export default async function HomePage() {
             orderBy: { createdAt: "asc" },
             include: {
               author: {
-                select: { id: true, name: true, username: true, image: true },
+                select: {
+                  id: true,
+                  name: true,
+                  username: true,
+                  image: true,
+                  emailVerified: true,
+                },
               },
               _count: { select: { likes: true } },
               likes: {
@@ -82,11 +118,8 @@ export default async function HomePage() {
           <div className="sticky top-0 bg-black/80 backdrop-blur-md z-10 border-b border-gray-800 flex items-center h-13 font-bold text-sm">
             <button className="flex-1 h-full flex items-center justify-center hover:bg-zinc-900/60 transition">
               <span className="relative h-full flex items-center border-b-4 border-sky-500 font-bold">
-                For you
+                Following
               </span>
-            </button>
-            <button className="flex-1 h-full flex items-center justify-center hover:bg-zinc-900/60 transition text-gray-500">
-              Following
             </button>
           </div>
 
@@ -97,9 +130,9 @@ export default async function HomePage() {
             />
           </div>
         </main>
+
         <div className="w-22 xl:w-68.75 h-screen shrink-0" />
       </div>
     </div>
   );
 }
-//Collekable
