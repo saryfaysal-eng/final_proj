@@ -33,7 +33,13 @@ export default async function HistoryPage() {
     orderBy: { createdAt: "desc" },
     include: {
       author: {
-        select: { id: true, name: true, username: true, image: true },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+          emailVerified: true,
+        },
       },
       _count: {
         select: { likes: true, comments: true },
@@ -47,7 +53,13 @@ export default async function HistoryPage() {
         orderBy: { createdAt: "asc" },
         include: {
           author: {
-            select: { id: true, name: true, username: true, image: true },
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              image: true,
+              emailVerified: true,
+            },
           },
           _count: { select: { likes: true } },
           likes: {
@@ -58,7 +70,13 @@ export default async function HistoryPage() {
             orderBy: { createdAt: "asc" },
             include: {
               author: {
-                select: { id: true, name: true, username: true, image: true },
+                select: {
+                  id: true,
+                  name: true,
+                  username: true,
+                  image: true,
+                  emailVerified: true,
+                },
               },
               _count: { select: { likes: true } },
               likes: {

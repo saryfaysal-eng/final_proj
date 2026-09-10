@@ -95,7 +95,13 @@ export default async function ProfilePage({
     orderBy: { createdAt: "desc" },
     include: {
       author: {
-        select: { id: true, name: true, username: true, image: true },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          image: true,
+          emailVerified: true,
+        },
       },
       _count: {
         select: { likes: true, comments: true },
@@ -111,7 +117,13 @@ export default async function ProfilePage({
         orderBy: { createdAt: "asc" },
         include: {
           author: {
-            select: { id: true, name: true, username: true, image: true },
+            select: {
+              id: true,
+              name: true,
+              username: true,
+              image: true,
+              emailVerified: true,
+            },
           },
           _count: { select: { likes: true } },
           likes: currentUserId
@@ -124,7 +136,13 @@ export default async function ProfilePage({
             orderBy: { createdAt: "asc" },
             include: {
               author: {
-                select: { id: true, name: true, username: true, image: true },
+                select: {
+                  id: true,
+                  name: true,
+                  username: true,
+                  image: true,
+                  emailVerified: true,
+                },
               },
               _count: { select: { likes: true } },
               likes: currentUserId
